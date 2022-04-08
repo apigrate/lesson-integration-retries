@@ -1,0 +1,14 @@
+{
+  "description": "Layer containing common dependencies for XXX serverless apps.",
+  "author": "Derek Gau",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@apigrate/aws-storage": "^2.0.1",
+    "@apigrate/logger": "^3.1.1",
+    "@apigrate/slack": "^4.0.0",
+    "@aws-sdk/client-sqs": "^3.6.0",
+    "debug": "^4.3.1",
+    "dotenv": "^8.2.0",
+    "moment": "^2.29.1"
+  }
+}

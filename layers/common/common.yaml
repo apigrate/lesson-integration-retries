@@ -1,0 +1,17 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: Common dependencies for XXX serverless app(s)
+
+Resources:
+  CommonDependenciesLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: XXX-serverless-common
+      Description: Common dependencies layer for XXX serverless app(s)
+      ContentUri: ./
+      CompatibleRuntimes:
+        - nodejs14.x
+      # LicenseInfo: 'MIT'
+      RetentionPolicy: Retain
+    Metadata:
+      BuildMethod: nodejs14.x
