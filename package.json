@@ -1,29 +1,24 @@
 {
-  "name": "myapp-automation",
-  "version": "0.0.0",
+  "name": "lesson-integration-retries",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
-    "use-development": "cp .env.development.local  .env",
-    "use-test": "cp .env.test.local         .env",
-    "use-production": "cp .env.production.local   .env",
-    "package-commonlayer": "sam package --profile whodat --template-file layers/common/common.yaml --output-template-file layers/common/pkg-common.yaml --s3-bucket myapp-codestage",
-    "deploy-commonlayer": "aws cloudformation deploy --profile whodat --template-file layers/common/pkg-common.yaml --stack-name myapp-common",
+    "package-libs": "sam package --profile apigrate-test --template-file layers/libs/libs.yaml --output-template-file layers/libs/pkg-libs.yaml --resolve-s3",
+    "deploy-libs": "aws cloudformation deploy --profile apigrate-test --template-file layers/libs/pkg-libs.yaml --stack-name lesson-retries-libs",
     "clean": "rm -r dist",
     "build": "mkdir -p dist && cp -R ./src dist/src && cp {index.js,README.md,example.env} dist ",
     "build-dev": "npm run clean && mkdir -p dist && cp .env.development.local dist/.env && npm run build",
-    "build-test": "npm run clean && mkdir -p dist && cp .env.test.local        dist/.env && npm run build",
-    "build-prod": "npm run clean && mkdir -p dist && cp .env.production.local  dist/.env && npm run build",
-    "package-myapp": "sam package --profile whodat --template-file templates/sam-myapp.yaml --output-template-file pkg-myapp.yaml --s3-bucket myapp-codestage",
-    "deploy-myapp": "aws cloudformation deploy --profile whodat --template-file pkg-myapp.yaml --stack-name myapp"
+    "package-app": "sam package --profile apigrate-test --template-file templates/sam-app.yaml --output-template-file pkg-app.yaml --resolve-s3",
+    "deploy-app": "aws cloudformation deploy --profile apigrate-test --template-file pkg-app.yaml --stack-name lesson-retries"
   },
   "devDependencies": {
-    "@apigrate/aws-storage": "^2.0.1",
-    "@apigrate/logger": "^3.1.1",
+    "@apigrate/aws-storage": "^2.1.0",
+    "@apigrate/logger": "^3.2.0",
     "@apigrate/slack": "^4.0.0",
-    "@aws-sdk/client-sqs": "^3.6.0",
-    "debug": "^4.3.1",
-    "dotenv": "^8.2.0",
+    "@aws-sdk/client-sqs": "^3.58.0",
+    "debug": "^4.3.4",
+    "dotenv": "^8.6.0",
     "eslint-plugin-node": "^11.1.0",
-    "moment": "^2.29.1"
+    "luxon": "^2.3.1"
   }
 }

@@ -3,12 +3,12 @@
   "author": "Derek Gau",
   "license": "UNLICENSED",
   "dependencies": {
-    "@apigrate/aws-storage": "^2.0.1",
-    "@apigrate/logger": "^3.1.1",
+    "@apigrate/aws-storage": "^2.1.0",
+    "@apigrate/logger": "^3.2.0",
     "@apigrate/slack": "^4.0.0",
-    "@aws-sdk/client-sqs": "^3.6.0",
-    "debug": "^4.3.1",
-    "dotenv": "^8.2.0",
-    "moment": "^2.29.1"
+    "@aws-sdk/client-sqs": "^3.58.0",
+    "debug": "^4.3.4",
+    "dotenv": "^8.6.0",
+    "luxon": "^2.3.1"
   }
 }

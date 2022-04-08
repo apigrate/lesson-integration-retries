@@ -1,13 +1,13 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: 'AWS::Serverless-2016-10-31'
-Description: Common dependencies for XXX serverless app(s)
+Description: Common libs for the lesson-retries app.
 
 Resources:
-  CommonDependenciesLayer:
+  Lesson1LibsLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
-      LayerName: XXX-serverless-common
-      Description: Common dependencies layer for XXX serverless app(s)
+      LayerName: lessonRTR-libs
+      Description: Common libs for the lesson-retries app.
       ContentUri: ./
       CompatibleRuntimes:
         - nodejs14.x
