@@ -5,7 +5,8 @@
   "scripts": {
     "package-libs": "sam package --profile apigrate-test --template-file layers/libs/libs.yaml --output-template-file layers/libs/pkg-libs.yaml --resolve-s3",
     "deploy-libs": "aws cloudformation deploy --profile apigrate-test --template-file layers/libs/pkg-libs.yaml --stack-name lesson-retries-libs",
-    "clean": "rm -r dist",
+    "clean": "rm -rf dist",
+    "compile": "tsc build",
     "build": "mkdir -p dist && cp -R ./src dist/src && cp {index.js,README.md,example.env} dist ",
     "build-dev": "npm run clean && mkdir -p dist && cp .env.development.local dist/.env && npm run build",
     "package-app": "sam package --profile apigrate-test --template-file templates/sam-app.yaml --output-template-file pkg-app.yaml --resolve-s3",

@@ -68,4 +68,6 @@ test/*
 .vscode
 pkg.yaml
 pkg*.yaml
+
+dist
 .env.*.local

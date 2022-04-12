@@ -1,77 +1,89 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: 'AWS::Serverless-2016-10-31'
 Description: Lesson1 - demonstrate integration retry architecture.
-Parameters:
-  # Manually define this in AWS IAM for just the services needed.
-  lambdaExecutionRole:
-    Description: 'Required. The role used for lambda execution.'
-    Type: 'String'
-    Default: 'arn:aws:iam::552129529781:role/LambdaExecutionRole'
 
 Globals:
   Function:
     CodeUri: ../dist
     Runtime: nodejs14.x
     MemorySize: 256
-    Timeout: 60
+    Timeout: 15
     Layers:
-      - 'arn:aws:lambda:us-east-1:552129529781:layer:lesson-retries-libs'
+      - 'arn:aws:lambda:us-east-2:552129529781:layer:lessonRTR-libs:1'
+    
 Resources:
   # A dead-letter queue.
   lessonRTRQueueDL:
     Type: 'AWS::SQS::Queue'
     Properties: 
-      MessageRetentionPeriod: 345600
+      # retain messages for 1 day (max: 14 days=1209600)
+      MessageRetentionPeriod: 86400
       QueueName: 'lessonRTR-dlq'
-      VisibilityTimeout: 90
+      VisibilityTimeout: 30
 
   # The queue for messages.
   lessonRTRQueue:
     Type: 'AWS::SQS::Queue'
     Properties: 
-      MessageRetentionPeriod: 345600
+      # retain messages for 1 day (max: 14 days=1209600)
+      MessageRetentionPeriod: 86400
       QueueName: 'lessonRTR'
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt lessonRTRQueueDL.Arn
-        # Note, a maxReceiveCount=1 means no retries (message is only read for processing once).
+        # Note, a maxReceiveCount=1 means no automatic retries (message is only read for processing once).
         #  if an error occurs, it is sent to the dead-letter-queue immediately.
-        # Retry once by default...
-        maxReceiveCount: 2
+        maxReceiveCount: 1
       # Amazon recommends VisiblityTimeout should be at least 6*Timeout of Lambda Processing Fct to give the fct enough time to handle retries etc.
-      VisibilityTimeout: 600
+      VisibilityTimeout: 30
   
   lessonRTRWebhookHandler:
     Type: 'AWS::Serverless::Function'
     Properties:
       FunctionName: lessonRTRWebhookHandler
-      Handler: index.handleEntityWebhook
+      Handler: index.handleWebhook
       Description: Processes a webhook for lessonRTR, enqueuing the entity data into an SQS queue.
-      Role:
-        Ref: lambdaExecutionRole
-      Events:
-        # Define the API Gateway endpoint here.
-        ApiHandleLesson1Message:
-          Type: Api
-          Properties:
-            Path: '/lessonRTR/webhook'
-            Method: POST
+      Role: 'arn:aws:iam::552129529781:role/LambdaExecutionRole'
+      FunctionUrlConfig:
+        AuthType: NONE
       Environment:
         Variables:
           QUEUE_URL: 
             Ref: lessonRTRQueue
-
+      
   lessonRTRProcessor:
     Type: 'AWS::Serverless::Function'
     Properties:
       FunctionName: lessonRTRProcessor
       Handler: index.processMessage
-      Description: Process queue messages. This it just writes messages to a Slack channel, but it has a 25% error rate to demonstrate how retries work.
-      Role:
-        Ref: lambdaExecutionRole
+      Description: Process queue messages. It just writes messages to a Slack channel, but it has a 25% error rate to demonstrate how retries work.
+      Role: 'arn:aws:iam::552129529781:role/LambdaExecutionRole'
       Events:
         # A Preexisting Queue should be defined to hold the queue of company updates.
-        ProcessLesson1EntityFromQueue:
+        ProcessLessonRTREntityFromQueue:
           Type: SQS
           Properties:
             Queue: !GetAtt lessonRTRQueue.Arn
-            BatchSize: 1
+            FunctionResponseTypes:
+              - ReportBatchItemFailures
+
+  lessonRTRDeadLetterProcessor:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: lessonRTRDeadLetterProcessor
+      Handler: index.processDLQMessage
+      Description: Oversees DLQ processing, determining when/whether to retry records.
+      Role: 'arn:aws:iam::552129529781:role/LambdaExecutionRole'
+      Events:
+        # A Preexisting Queue should be defined to hold the queue of company updates.
+        ProcessDLQLessonRTREntity:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt lessonRTRQueueDL.Arn
+            FunctionResponseTypes:
+              - ReportBatchItemFailures
+      Environment:
+        Variables:
+          # The original queue where retries are to be sent.
+          QUEUE_URL:
+            Ref: lessonRTRQueue
+          
